@@ -1,0 +1,144 @@
+---
+title: "HW4"
+output: pdf_document
+---
+
+Vectors
+1.Creat the vectors:
+a)(1,2,3,...,19,20)
+```{r}
+c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20)#c() is the code for the vector and the items between () will be the content in vector
+```
+b)(20,19,...,2,1)
+```{r}
+c(20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1)#c() is the code for the vector and the items between () will be the content in vector
+```
+c)(1,2,3,...,19,20,19,18,...,2,1)
+```{r}
+c(1:20,19:1)#c() is the vector code and items between () is the content in vector. ':' is counting the number from 1 to 20 by step 1.
+```
+d)(4,6,3)and assign it to the name tmp
+```{r}
+tmp<-c(4,6,3)#c() is the vector and '<-' is symbol for giving varible values
+```
+e)(4,6,3,4,6,3,...,4,6,3)where there are 10 occurences of 4.
+```{r}
+rep(tmp,10)#rep() is repeating the content, 10 indicate the repeat time is 10
+```
+f)(4,6,3,4,6,3,...,4,6,3)where there are 11 occurences of 4,10 occurences of 6 and 10 occurrences of 3.
+```{r}
+rep(tmp,len=31)#rep() is repeating function, the object is tmp variable, the length of the return value is 31 therefore we can make 11 times of 4, 10 times of 6&3
+```
+g)(4,4,...,4,6,6,...,6,3,3,...,3)where there are 10 occurrences of 4,20 occurrences of 6 and 30 occurrences of 3.
+```{r}
+rep(tmp,c(10,20,30))#rep() is repeating function, object is tmp variable, the time for each number is indicated, 10 times for 4, 20 times for 6 and 30 times of 3.
+```
+
+2.Creat a vector of the values of e^xcos(x) at x=3,3.1,3.2,...,5.9,6.
+```{r}
+x <- seq(3,6,by=0.1)#seq() is the function for sequence, start from 3 and end at 6, the step length is 0.1, then give this sequence to x.
+exp(x)*cos(x)#exp() is exponential operator, cos() is cosine operator, *multiplication
+```
+
+3. Creating the following vectors:
+a)(0.1^30.2^1, 0.1^60.2^4, 0.1^90.2^7,...,0.1^360.2^34)
+```{r}
+y=seq(3,36,by=3)#seq()is sequence, start from 3 and end at 36, step size is 3 and give this sequence to y.
+x=y-2#get new sequence x from y with y-2
+0.1^y*0.2^x#^ is the operator for certain order
+```
+b)(2,2^2/2,2^3/3,...,2^25/25)
+```{r}
+z=seq(1,25,by=1)#seq() is sequence start with 1 and end at 25, the step size is 1. Maybe the 1:25 will give same result
+2^z/z#^ is for order operator and / is dividing.
+```
+
+4.Calculate the following:
+a)
+```{r}
+i=seq(10,100,by=1)#seq() is sequence start from 10 and end at 100 with step size 1.
+sum(i^3+4*i^2)#sum() is adding up all the content in the (), ^ is order operator
+```
+b)
+```{r}
+i=seq(1,25,by=1)#seq() is sequence start from 1 and end at 25 with step size 1.
+sum(2^i/i+3^i/i^2)#sum() is adding up all the content in the (), ^ is order operator
+```
+
+5.Use the function paste to create the following character vectors of length30:
+a)
+```{r}
+paste("lable",1:30,sep=" ")#paster() just as the name of the function, will show the content, 'lable' is string and will be shown everytime, 1:30 is one sequence start from 1 and end at 30 and each number will show once. 'sep=' is indicating what will be used to separate the string 'label' and numebr follows. We use " " leave one space between means we will use space to separate them.
+```
+b)
+```{r}
+paste("fn",1:30,sep="")#paster() just as the name of the function, will show the content, 'lable' is string and will be shown everytime, 1:30 is one sequence start from 1 and end at 30 and each number will show once. 'sep=' is indicating what will be used to separate the string 'label' and numebr follows. We use "" leave no space between means those two items will be closely arranged. 
+```
+
+6.Execute the following lines which create two vectors of random integers which are chosen with replacement from the integers 0,1,...,999. Both vectors have length 250.
+```{r}
+set.seed(50)
+xVec<-sample(0:999,250,replace=T)
+yVec<-sample(0:999,250,replace=T)
+```
+a)
+```{r}
+yVec[-1]-xVec[-length(xVec)]#yVec and xVec are variables, [] follows variables contained the index of that variable to take certain value in that variable, but with negative sign '-' before is actually delete that chosen element. yVec[-1] deleted the first element y1 and xVec[-length(xVec)] delete the last element, length() is the length of xVec and will show how many elements xVec contains.
+```
+b)
+```{r}
+sin(yVec[-length(yVec)])/cos(xVec[-1])#sin()and cos()are sine and cosine operators.yVec and xVec are variables, [] follows variables contained the index of that variable to take certain value in that variable, but with negative sign '-' before is actually delete that chosen element. yVec[-1] deleted the first element y1 and xVec[-length(xVec)] delete the last element, length() is the length of xVec and will show how many elements xVec contains.
+```
+c)
+```{r}
+i=1:248#i is one sequence start with 1 and end at 248 corresponding to 1 and n-2
+xVec[i]+2*xVec[i+1]-xVec[i+2]#xVec[] is taking certain element in xVec and the numebr in [] is the index of that vector.
+```
+d)
+```{r}
+i=1:249#i is one sequence start with 1 and end at 249 corresponding to 1 and n-1
+sum(exp(-xVec[i+1])/(xVec[i]+10))#sum() is adding up all the content, exp() is exponential operator,[] is index of the variable.
+```
+
+7.This question uses the vectors xVec and yVec created in the previous question and the functions sort,order, mean, sqrt, sum and abs.
+a)
+```{r}
+yVec[yVec>600]#yVec>600 is fliter standard that will return the index of elements in yVec larger than 600, yVec[index] will return the elements in yVec meet the requirement
+```
+b)
+```{r}
+which(yVec>600)#which() is showing the index of elements meet certain requirements. yVec>600 is our fliter standard.
+```
+C)
+```{r}
+xVec[yVec>600]#yVec>600 is fliter standard that will return the index of elements in yVec larger than 600, with those indexs we can have corresponding values in xVec.
+```
+d)
+```{r}
+X=mean(xVec)#mean() is computing the mean of xVec
+sqrt(abs(xVec-X))#abs() gets the absolute value of the content, sqrt() means the square root.
+```
+e)
+```{r}
+sum(yVec>max(yVec)-200)#max() get the maximum value and yVec>max(yVec)-200 is one fliter to get the elements in yVec in yVec within 200 of the maximum value. sum() is adding all those up to get the number of those values.
+```
+f)
+```{r}
+sum(xVec%%2==0)# divisible by 2 means that mod of division is 0, sum() is adding up all elements meet the requirement and show how many the number is
+```
+g)
+```{r}
+xVec[order(yVec)]#order(yVec) will rearrange yVec with increasing order and returns the indexs, with the index to rearrange the xVec correspondingly.
+```
+h)
+```{r}
+i=seq(1,250,by=3)#seq() is sequence start with 1 and end at 250 with step 3 corresponding to 1,4 7,10,13...
+yVec[i]#pick out elements with the index we just get.
+```
+
+8.By using the function cumproud or otherwise, calculate:
+```{r}
+j=seq(2,38,by=2)#seq() is sequence start with 2 and end at 38 with step size 2.
+k=seq(3,39,by=2)#seq() is sequence start with 3 and end at 39 with step size 2.
+1+sum(cumprod(j/k))#cumprod() is cumulatively multiplication of the content, sum() is adding up all the elements.
+```
