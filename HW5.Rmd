@@ -1,0 +1,72 @@
+---
+title: "HW5"
+output: html_document
+---
+library(ggplot2)
+?diamonds
+head(diamonds)
+str(diamonds)
+
+1, Generically extract all numeric columns
+```{r}
+diamonds_num=diamonds[sapply(diamonds, is.numeric)]# is.numeric returns true if the variable is numeric and false if it is otherwise. sapply() apply a function to elements in a list and returns the results in vector, martix or a list, kind of similar to for loop. The is.numeric is the argument of function sapply(). Because diamonds is one dataframe, therefore we will return a matrix(or dataframe) with all columnes meet the true argument requirment.
+```
+
+2, create data frame contains each pair of variable names in the first column in a single string separated by a -
+```{r}
+#I am not sure about if we need to include the pattern like 'x-x', therefore I wrote two methods, one includes pattern like 'x-x' the other exclude pattern like 'x-x' 
+
+#The method includes pattern like 'x-x'
+v1 <- c("carat","depth","table","price","x","y","z")#those are the names of the numeric variables in the diamonds dataframe. We set up one vector to conveniencely used in the latter steps.
+v2 <- c("carat","depth","table","price","x","y","z")
+string=outer(v1,v2,paste,sep="-")#the outer() function will return product of arrays. v1, v2 is the vectors of names of numeric variables. paste() is the funciton to use on the outer products. sep="-" is the symble we use to separate the items in two vectors correspondly
+string=as.vector(string[!lower.tri(string)])#lower.tri() is the operator of choosing the lowr trangle of the matrix string. We take the lower trangle to avoid the repeat. then apply this to string we will return the no repeat matrix. Then set it as one vector with as.vector
+library(stats)
+correlation=cor(diamonds_num, method="pearson")#cor() is the correlation coefficients matrix according to variables with the method pearson.
+correlation=as.vector(correlation[!lower.tri(correlation)])#same logic to avoid the repeat and then set as vector. Then vector correlation and vector string should have same length and their position is also correlated because they are both returned from same position of matrix correspondingly.
+newdata=data.frame(string,correlation)#data.frame() is making up one data frame with content string vector and correlation vectors.
+newdata
+
+#The method exclude the pattern like 'x-x'
+string1=''#set one empty string1 so that we can write in later and because we are operating names therefore we need to set as ''
+for (i in 1:6){#because we exclude the pattern like 'x-x' and we will define (i+1) later therefore we can only take loop from 1 to 6
+  string1 <- c(string1, c(paste(colnames(diamonds_num[i]),colnames(diamonds_num[(i+1):7]),sep='-')))
+}#we use c(string1,...) so that we can keep the values of last loop, colnames() is function will return variable names correspondingly, we use diamonds_num[(i+1):7] to pair each variable(pair variable i and variable((i+1):7). The paste() function combines the variable names and separate them with '-'
+string1 <-string1[-1]#because string still contains the initial value we defined therefore we need to delete it.
+correlation1=0#same logic as before, set initial value to 0
+for (j in 1:6){#because we exclude the pattern like 'x-x' and we will define (i+1) later therefore we can only take loop from 1 to 6
+  correlation1 <- c(correlation1, cor(diamonds_num[j],diamonds_num[(j+1):7]))
+}#cor() will return the correlation coefficient, and use[] index to choose variables from the diamonds_num data frame. Alao use (j+1):7 to pair variables
+correlation1 <- correlation1[-1]#because correlation contains the initial value we defined, then we need to delete it
+correlation1
+newdata1 <-data.frame(string1, correlation1)#data.frame() is making up one data frame with content string vector and correlation vectors.
+```
+
+3, create and label a catter plot for every pair of numeric variables
+```{r}
+#Method includes the pattern 'x-x', pairs with itself
+multiplot <- par(mfrow = c(4,7))#par() function is combining multiple plots into one overall graph. With par() we can include the option mfrow=c(nrows, ncols) to create a matrix of nrows and ncols plots that are filled in by row. Because we includes the pair of itself then we would have 28 pairs therefore we divide plot to 4 row 7 columes which is 28
+num = 0#set initial value as 0 then we can later use it as counter of loop
+for ( i in 1:7){#because we include the pattern 'x-x', pairs with itself, then we can take loop from 1 to 7
+  for (j in i:7){#use this to pair variables
+    num= num +1#each time of the loop num will increase by one therefore we can choose the correlation coefficient correspondingly
+    plot(diamonds_num[c(i,j)], main=c(newdata[num,2]))#c(i,j) to pick the columes i and j from diamonds_num dataframe to act as input of plot, and main=c(newdata[num,2]) is choosing the corresponding correlation coefficient
+  }
+}
+par(multiplot)#fill the multiplot
+multiplot#show the overall picture
+
+
+#Method exclude the pattern 'x-x', pairs of itself
+multiplot1 <- par(mfrow = c(3,7))#par() function is combining multiple plots into one overall graph. With par() we can include the option mfrow=c(nrows, ncols) to create a matrix of nrows and ncols plots that are filled in by row. Because we excludes the pair of itself then we would have 21 pairs therefore we divide plot to 3 row 7 columes which is 21
+num = 0#set initial value as 0 then we can later use it as counter of loop
+for ( i in 1:6){#because we exclude the pattern 'x-x', pairs with itself, then we can take loop from 1 to 6, because we will also define i+1 later
+  for (j in (i+1):7){#use this to pair variables
+    num= num +1#each time of the loop num will increase by one therefore we can choose the correlation coefficient correspondingly
+    plot(diamonds_num[c(i,j)], main=c(newdata1[num,2]))#c(i,j) to pick the columes i and j from diamonds_num dataframe to act as input of plot, and main=c(newdata[num,2]) is choosing the corresponding correlation coefficient
+  }
+}
+par(multiplot1)#fill the multiplot
+multiplot1#show the overall picture
+```
+
