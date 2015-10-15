@@ -1,0 +1,41 @@
+---
+title: "TEST1_R"
+output: html_document
+---
+
+library(ggplot2)#load the package of ggplot2 for the data concern and plot graphs
+data=diamonds#copy the data to protect the original data 
+require(grid)#for the multi-plot concern
+require(gridExtra)
+
+1,add a logic column to diamonds based on the ratio of 1's and 0's in the mecars$vs variable.
+```{r}
+data1=data.frame(1:53920,mtcars$vs)#I am taking the advantage that data.frame(x,y),if y is shorter and length of x is n times of that of y then y will be extended to the length as x. I am using the recycle of mtcars$vs to make sure that the ratio of 1s and 0s will be as close as the original when I extend the length. 
+equi1=c(0,0,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,1,1,1)#because there are 59340 observations in the diamonds, then there will be twenty left. Because 53940 can not be divided by 32 then we cannot get exactly the same ratio then I want to approximate the ratio as close as possible. Then I adjust and add this 20 to get the same length of 53940. Two ratios are very close and the original one is 0.77777 and the approximate one we get is 0.77785 
+equi=append(data1[[2]],equi1)#use append() to add the two elements to the dataframe.
+equi=as.logical(equi)#as.logical() to set the class of the variable as logical
+data=data.frame(data,equi)#use data.frame() to add this colume to original dataframe.
+```
+
+2, Figure out how to generically extract all factor and logical columns from any data frame so the method you develop can be used on any data.
+```{r}
+data_factor=data[sapply(data, is.factor)]# is.factor returns true if the variable is factor and false if it is otherwise. sapply() apply a function to variables in the data and returns the results in vector, martix or a list, kind of similar to for loop. The is.factor is the argument of function sapply(). Because diamonds is one dataframe, therefore we will return a matrix(or dataframe) with all columnes meet the true argument requirment
+
+data_logical=data[sapply(data, is.logical)]# is.logical returns true if the variable is logical and false if it is otherwise. sapply() apply a function to variables in the data and returns the results in vector, martix or a list, kind of similar to for loop. The is.logical is the argument of function sapply(). Because diamonds is one dataframe, therefore we will return a matrix(or dataframe) with all columnes meet the true argument requirment
+
+```
+
+3, Plot a gray bar graph for every factor and logical variable
+```{r}
+p1=ggplot(data,aes(x=cut))+geom_bar(fill="gray")#plot a bar graph for variable cut and we fill it with gray color
+p2=ggplot(data,aes(x=color))+geom_bar(fill="gray")#plot a bar graph for variable color and we fill it with gray color
+p3=ggplot(data,aes(x=clarity))+geom_bar(fill="gray")#plot a bar graph for variable clairty and we fill it with gray color
+p4=ggplot(data,aes(x=equi))+geom_bar(fill="gray")#plot a bar graph for variable equi and we fill it with gray color
+grid.arrange(p1,p2,p3,p4,ncol=2,nrow=2)#grid.arrange() is the function for multi plot. We plot the p1,p2,p3,p4(we have got from above) in one picture and we arrange a 2*2 plot for those four graphs.
+```
+
+4,Create a list of frequency tables that contains one table for each categorical and logical variable in the data frame.
+```{r}
+mytable <-list(table(data$cut),table(data$color),table(data$clarity),table(data$equi))#table() is the function for frequency table and list() make a list of the content. Combine those two commends we will create a list of frequency tables
+mytable#showing up those tables
+```
