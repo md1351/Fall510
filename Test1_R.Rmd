@@ -2,11 +2,12 @@
 title: "TEST1_R"
 output: html_document
 ---
-
+```{r}
 library(ggplot2)#load the package of ggplot2 for the data concern and plot graphs
 data=diamonds#copy the data to protect the original data 
 require(grid)#for the multi-plot concern
 require(gridExtra)
+```
 
 1,add a logic column to diamonds based on the ratio of 1's and 0's in the mecars$vs variable.
 ```{r}
