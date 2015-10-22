@@ -1,0 +1,130 @@
+---
+title: "HW6"
+output: html_document
+---
+
+```{r}
+require(ggplot2)#improt the ggplot2 package both for the data concern and plot
+require(grid)#the package for multiploting in same picture
+require(gridExtra)
+```
+
+```{r}
+explore <- function(data_frame,bin_size,threshold)#the beginning of function, the name of the function is explore and there are three inputs:data_frame, bin_size and one threshold.
+  { #the symbol for definning function, function content in the following
+data_num=data_frame[sapply(data_frame, is.numeric)]#extract all the numeric variables from the data_frame and name them with data_num. The class of data_num is still data frame.
+data_fac=data_frame[sapply(data_frame,is.factor)]#extract all the factor variables from the data_frame and name them with data_num. The class of data_num is still data frame.
+data_log=data_frame[sapply(data_frame,is.logical)]#extract all the logical variables from the data_frame and name them with data_num. The class of data_num is still data frame.
+data_cat=data.frame(data_fac,data_log)#in order to keep the same class with other variables we also need to set the categorial and binary variables to one data frame. Therefore we combine the factor and logical data frame into one data frame named with data_cat.
+
+#1
+#Following this line of comment, I am trying to solve the first sub-question which will generate pairs of blue histograms
+N=colnames(data_num)#colnames() will returns a list of content names, we name this list with N for the convenience of defining loop over it and naming the plot in the loop following
+for (i in seq_along(N))#seq_along(N) will generate a list of value like[1,2,..., length(N)], and then we define a loop over this list of value 
+  { #the symbol for for loop, for loop content is followed
+  for (j in seq_along(bin_size))#for loop in for loop,seq_along(bin_size) will generate a list of value like[1,2,..., length(bin_size)], and then we define a loop over this list of value.
+    { #the symbol for the inner for loop, for loop content is followed
+p1=ggplot(data_num,aes_string(x=N[i]))+geom_density(color="blue")+geom_vline(xintercept=sum(data_num[i])/length(rownames(data_frame)),color="red")#ggplot2 with density plot. aes_string() will take loop ith variable's name, if we just aes(x=N[i]) the x-label would just be N[i] which is not correct.Because this is density plot so the y-label will be "density". "+" means we are adding density layer to the ggplot. geom_vline(xintercept= )is the code for adding a vertical line, we fix the position for this line with "sum(data_num[i])/length(rownames(data_frame)" which means the mean of the variables. "length(rownames(data_frame))"will returns how many observations the data includes. In addition we set the color of the line as red. 
+                                                                             p2=ggplot(data_num,aes_string(x=N[i]))+geom_histogram(fill="blue",binwidth=bin_size[j])+geom_vline(xintercept=sum(data_num[i])/length(rownames(data_frame)), color="red")#ggplot2 with histogram plot. aes_string() will take loop ith variable's name, if we just aes(x=N[i]) the x-label would just be N[i] which is not correct.Because this is histogram plot so the y-label will be "count" as default. And in addition we set the binwidth according to the bin_size input. "+" means we are adding density layer to the ggplot. geom_vline(xintercept= )is the code for adding a vertical line, we fix the position for this line with "sum(data_num[i])/length(rownames(data_frame)" which means the mean of the variables. "length(rownames(data_frame))"will returns how many observations the data includes. In addition we set the color of the line as red.                                       
+                                                                             grid.arrange(p1,p2)#grid.arrange will put the two figures above into one picture
+    }#the ending of the inner loop which return 3 pairs of plots with different bin width.
+  }#the ending of the outer loop which returns 3 pairs of plots for each variable the data frame contains.
+
+#2
+#Following this comment, I am trying to solve the second sub question which will plot a gray bar graph for every categorical and binary variable
+M=names(data_cat)#names() will returns a list of content names, we name this list with M for the convenience of defining loop over it and naming the plot in the loop following
+for (i in seq_along(M))#for loop, seq_along(M) will generate a list of value like[1,2,..., length(M)], and then we define a loop over this list of value
+  { #the symbol of the loop and the loop content is followed
+p=ggplot(data_cat, aes_string(x=M[i]))+geom_bar(fill="gray")#ggplot with the bar plot. we use the categorial and binary variables here with "data_cat" and use the aes_string() to name the x-label of the plot and fill the bar with gray according to the requirement
+print(p)#returns the bar plot
+  }#the end of the loop which will returna gray bar plot for each categorical and binary variable
+
+#3
+#Following this comment, I am trying to solve the third sub question which calculate the r-square value for every pair of numerical variables.
+square=0#set the initial value of the square to 0.
+for (i in 1:(length(data_num)-1))#for loop, because we are calculating the r-square for every pair of numerical variables therefore we just need to go to last 2 vaiable from the beginning. so the for loop is defined on 1:(length(data_num)-1)
+  {#the begin for the loop of i
+  for (j in (i+1):length(data_num))#the inner loop for j. For each i, we define a loop over the variables after it to make pairs with i. So the loop of j is defined over (i+1):length(data_num)
+    {#the begin of the loop for j
+    square <- c(square, 
+    summary(lm(data_num[[i]]~data_num[[j]]))$r.squared)#square<-c(square,...) will keep the value of each time of loop. lm(data_num[[i]]~data_num[[j]]) will return a linear model of the ith and jth variable fo data_num. summary()will return a basic information fo this model and r.squared is one of those information. we use $ to extract that value.
+    }#the end of the inner loop of j which will return the r-square value of i and the variables after i.
+  }#the end of the loop of i which will return the r-square value for every pair of numerical variables.
+square <- square[-1]#we need to delete the initial value of square
+square#the final answer of r-square value for every pair of numerical variables
+
+#4
+#From this comment, I am trying to solve the fourth sub question which will return a list
+#4.a
+#A frequency table for every categorical and binary variable
+a <- table(data_cat)#table() will return a frequency table for every categorical and binary variable and we name those tables to one variable a
+
+#4.b.i
+#A summary statistics table for each numerical variale
+b <- summary(data_num)#we have already extract the numerical variables fromt the data frame. And summary() will return a statisticas table for each numerical variable and we name those tables with one variable b
+
+#4.b.ii
+#A data frame that contains each pair of variable names and the associated r-square value
+string=''#set one empty string1 so that we can write in later and because we are operating names therefore we need to set as ''
+for (i in 1:(length(data_num)-1))#because we exclude the pattern like 'x-x' and we will define (i+1) later therefore we can only take loop from 1 to length(data_num)-1.
+  {#the begin of the for loop
+  string <- c(string, c(paste(colnames(data_num[i]),colnames(data_num[(i+1):length(data_num)]),sep='-')))#we use c(string1,...) so that we can keep the values of last loop, colnames() is function will return variable names correspondingly, we use diamonds_num[(i+1):length(data_num)] to pair each variable(pair variable i and variable((i+1):length(data_num)). The paste() function combines the variable names and separate them with '-'
+  }#the end of the for loop which will return a list contains each pair of variable names
+string <-string[-1]#delete the initial value
+square=0#set the initial value of square as 0
+for (i in 1:(length(data_num)-1))#for loop for i, because we are taking pairs of each variables therefore the for loop can only be defined over 1:length(data_num)-1
+  {#the begin of the for loop of i
+  for (j in (i+1):length(data_num))#the inner loop of j in each i, because we are taking pairs so only consider the variables after i, so the loop of j is defined over (i+1):length(data_num)
+    {#the begin of the j loop
+    square <- c(square, 
+    summary(lm(data_num[[i]]~data_num[[j]]))$r.squared)#square<-c(square,...) will keep the value of each time of loop. lm(data_num[[i]]~data_num[[j]]) will return a linear model of the ith and jth variable fo data_num. summary()will return a basic information fo this model and r.squared is one of those information. we use $ to extract that value.
+    }#the end of the inner loop of j which will return the r-square value of i and the variables after i.
+  }#the end of the loop of i which will return the r-square value for every pair of numerical variables.
+square <- square[-1]#delete the initial value
+rsquare<-data.frame(string, square)#combine the string and square into one single data frame named rsquare that contains each pair of variable names and the associated r-square value
+
+#4.b.iii
+#A data frame that contains each pair of variable names and correlation coefficient(Pearson) for all coefficients whose absolute value is greater than the correlation threshold(do not repeat any pairs)
+correlation=0#same logic as before, set initial value to 0
+for (j in 1:length(data_num)-1){#because we exclude the pattern like 'x-x' and we will define (i+1) later therefore we can only take loop from 1 to length(data_num)-1
+  correlation <- c(correlation, cor(data_num[j],data_num[(j+1):length(data_num)]))
+}#cor() will return the correlation coefficient, and use[] index to choose variables from the data_num data frame. Alao use (j+1):length(data_num) to pair variables
+correlation <- correlation[-1]#because correlation contains the initial value we defined, then we need to delete it
+ncorrelation <-data.frame(string, correlation)
+select=0#set the initial value to 0
+for (k in 1:length(correlation))#for loop, we will use each value of correlation to compare with threshold therefore the for loop is defined on 1:length(correlation)
+  {#the begin of the for loop of k
+  if (abs(correlation[k]>threshold)) select <- c(select, k)#if condition, if the kth correlation absoulte value is greater than threshold we will take that k index and save to the variable select
+  }#the end of the loop for k which will return a list of index that corresponding correlation absoulte value is greater than threshold.
+select <-select[-1]#delete the initial value
+greater <-ncorrelation[select,]#use the index from the for loop to select the corresponding pairs of variable names and correlation coefficient for all coefficient whose absolute value is greater than the correlation threshold, we have not repeat any pairs with this index method.
+
+#Because we need to return a list to inclues all those information above so we have
+Rlist <-list(a,b,rsquare,greater)#use list() to includes all the results above
+Rlist#output the Rlist 
+ }#The end of the explore function
+```
+
+
+Example #1 Diamonds data frame and you extend to include the VS logical colunm, a vector of bin size (5,20,50), and a correlation threshold of 0.25.
+
+```{r}
+#First extend to include the VS logical colunm to the diamonds data frame.
+data=diamonds
+data1=data.frame(1:53920,mtcars$vs)#I am taking the advantage that data.frame(x,y),if y is shorter and length of x is n times of that of y then y will be extended to the length as x. I am using the recycle of mtcars$vs to make sure that the ratio of 1s and 0s will be as close as the original when I extend the length. 
+equi1=c(0,0,1,1,0,1,0,1,1,1,1,0,0,0,0,0,0,1,1,1)#because there are 59340 observations in the diamonds, then there will be twenty left. Because 53940 can not be divided by 32 then we cannot get exactly the same ratio then I want to approximate the ratio as close as possible. Then I adjust and add this 20 to get the same length of 53940. Two ratios are very close and the original one is 0.77777 and the approximate one we get is 0.77785 
+equi=append(data1[[2]],equi1)#use append() to add the two elements to the dataframe.
+equi=as.logical(equi)#as.logical() to set the class of the variable as logical
+diamonds1=data.frame(data,equi)#use data.frame() to add this colume to original dataframe.
+```
+
+
+```{r}
+explore(data_frame=diamonds1,bin_size = c(5,20,50),threshold = 0.25)
+```
+
+Example #2 mtcars data frame,a vector of bin size (5,20,50), and a correlation threshold of 0.25.
+```{r}
+explore(data_frame=mtcars,bin_size = c(5,20,50),threshold = 0.25)
+```
+
