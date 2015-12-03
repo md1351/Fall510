@@ -1,0 +1,197 @@
+---
+title: "TEST2_R"
+output: html_document
+---
+DATA SECTION: This chunk is preparing the abalone data and name its rows and columns for latter usage.
+```{r}
+abalone <- read.csv("http://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data", header=FALSE)#read.csv() is the commend for reading data from outside resource. The address between " " is the data in the internet. header=FALSE is cancelling the original header of the data because we want to name it in own way . Then we name the whole data set as abalone for later usage.
+names(abalone) <-c("sex", "length","diameter","height","weight.whole","weight.shucked","weight.viscera","weight.shell","rings")#names(abalone) because abalone is one dataframe therefore the names is default set as the names of the columnes. c() can contain a list of names and strings in " " are the names of columns by order.
+summary(abalone)#just as a quick check, summary() shows the basic property information of the dataframe. 
+library(gridExtra)#gridExtra package is for the later grid plot.
+library(ggplot2)#for the data concern
+library(datasets)#for data concern
+```
+
+Q1: Take samples of 1%, 10%, 25%, 50%,80%, and 100% of the data. Calculate the min, max, mean and variance of the Whole_wgt column from each sample and stored in a dataframe.Name the mean row SampleMean, the other rows appropriately, and the columns based on the % sample.
+```{r}
+persample<-function(x,y){#define a function to take samples from the original dataframe. The function name is persample, and I want x to be the population means we will take samples from it. y is the percentile we want to take from the origianl data.
+  sample<-x[sample(1:nrow(abalone),y*nrow(abalone))]#The whole idea of taking samples is using the index of the population. sample(1:nrow(abalone), y*nrow(abalone)) in the sample function, the first input is the whole index number of the observations of the dataframe. This also means the range we can take samples. y*nrow(abalone) is the size of the sample. The whole sample function will generate a sequence of index numbers and we use x[] to get the corresponding numbers of the dataframe. Then this result should be one sample and just name it sample.
+  min<-min(sample)#min() function to find the minimal value of the sample
+  max<-max(sample)#max() function to find the maximal value of the sample
+  mean<-mean(sample)#mean() function to find the average of the sample
+  var<-var(sample)#var() function to find the variance of the sample
+  vector<-c(min,max,mean,var)#we organize the min, max, mean, var values in one vector and name it with vector.
+}
+mydataframe<- data.frame(persample(abalone$weight.whole,.01),persample(abalone$weight.whole,.1),persample(abalone$weight.whole,.25),persample(abalone$weight.whole,.5),persample(abalone$weight.whole,.8),persample(abalone$weight.whole,1))#Because we need to generate one dataframe to contain the dataframe, then we organize the vectors of each percentile in one dataframe with the function data.frame(). We directly use the function persample we just defined to generate the vector for each percentile. Then we name the dataframe as mydataframe.
+rownames(mydataframe)<-c("SampleMin","SampleMax","SampleMean","SampleVar")#rownames(mydataframe) function is naming each row of mydataframe.
+names(mydataframe)<-c("one_percent","ten_percent","twenty_five_percent","fifty_percent","eighty_percent","hundred_percent")#names(mydataframe) is naming each column 
+mydataframe#a quick view of mydataframe to see if it meet the requirements.
+```
+
+Q2: Create a grid of histograms that contains all sample sizes.
+```{r}
+gplot<-function(x,y){#define one function named gplot to get the grid plot, here input x represents dataset and y is the percentile.
+  par(mfrow=c(2,3))#par() function is separating the plot region into a 2*3 subsections. Then we can generate one grid plot.
+  for (i in y){#for loop to get each value in y inserted into the function
+  hist(sample1<-x[sample(1:nrow(abalone),i*nrow(abalone))], main = paste("Histogram of", i), xlab = 'weight.whole')#hist() function plot one histogram of the data.And the data for the plot is sample1 which we randomly select another group of data. 
+  }#the end of the for loop 
+}# the end of the function
+
+gplot(abalone$weight.whole,c(0.01,0.1,.25,.5,.8,1))#use the function we just defined with data abalone$weight data and a list of percentile as inputs of the function
+```
+
+Q3: Implement a loop that takes 1,000 samples at each of the sample sizes in Q1 above. Calculate a mean at each iteration and store the results in a dataframe.
+```{r}
+loop<-function(x){
+  df <- data.frame(r_one=numeric(1000),
+                   r_ten=numeric(1000),
+                   r_twentyfive=numeric(1000),
+                   r_fifty=numeric(1000),
+                   r_eighty=numeric(1000))#Set one empty dataframe to store the results of the loops. And we just name the columns as r_one, r_ten, r_twentyfive, t_fifty, t_eighty, and indicate the type of data should be numeric.
+  len=c(.01*nrow(x),0.1*nrow(x),.25*nrow(x),.5*nrow(x),.8*nrow(x))#generate a list of sample size associated with the percentile.We name this list as len for the convenience of using it in loop.
+  for (i in 1:1000){#i with for loop will generate 1000 times loop
+    for (j in 1:5){#for each i, j take each of the sample size, therefore the results will generate one 1000 rows and 5 columns dataframe
+        sam=abalone$weight.whole[sample(1:nrow(x), len[j])]#take samples for each percentile and name the sample with sam
+        df[i,j]=mean(sam)#get the mean for this sample and store the value in the ith row and j column.
+    }#end of j loop
+}#end of i loop    
+  names(df)<- c("One_Percent","Ten_percent","twenty_five_percent","fifty_percent","eighty_percent")#As we have already get the dataframe df, use names(df) to name the columns
+}
+loop(abalone)
+```
+
+Q4: Create another grid of histograms that contains the four columns just created and include the 100% sample from Q1.
+```{r}
+gplot1<-function(x){#define a function to get the grid plot, function name is gplot1 and the input x is the data we use
+  par(mfrow=c(2,3))#par function divide the plot region into a 2*3 region to save multiple plots
+  for (i in 1:length(df)){#set one for loop in the range of the number of df random variables
+  hist(x[[i]],main = paste("Histogram of", names(x)[i]), xlab = 'weight.whole')#hist() is geting a histogram, the input x[[i]] is the ith random variable of df
+  }#end of for loop
+  hist(persample(abalone$weight.whole,1), main='Histogram of 100%',xlab = 'weight.whole')#because we want to include the 100% sample from Q1 therefore we can just add the histgram of 100% sample after the loop of df random vaiables
+}#end of gplot1 function
+gplot1(df)
+```
+
+Q5: Calculate the min, max, mean and variance of each column from Q3 and of the total dataset. Append to the dataframe created in Q1. Name the row ResampleMean and the others appropriately.
+```{r}
+newframe<-function(x,y){
+  mydataframe1<-mydataframe#copy the dataframe of Q1 to distinct each dataframe.
+  for (i in 1:length(x)){#for loop, generate a list of numbers between 1 and length(df) and use this as the range of i
+    sample<-df[[i]]#take the ith random variable as sample
+    min<-min(sample)#minimal value
+    max<-max(sample)#maximal value
+    mean<-mean(sample)#average
+    var<-var(sample)#variance
+    vector<-c(min,max,mean,var)#save those results into one vector
+    mydataframe1<-data.frame(mydataframe1, vector)#for each time of loop, save the vector results into the mydataframe1, after the final loop we would have one complete dataframe contains the values of Q3 dataframe
+  }#end of the for loop
+  mydataframe1=data.frame(mydataframe1,persample(y,1))#because the dataframe in Q3 doesn't include the total dataset, therefore we add the total dataset individually
+rownames(mydataframe1)<-c("SampleMin","SampleMax","ResampleMean","SampleVar")#name the rows correspondingly
+names(mydataframe1)<-c("one_percent","ten_percent","twenty_five_percent","fifty_percent","eighty_percent","hundred_percent","r_one_percent","r_ten_percent","r_twenty_five_percent","r_fifty_percent","r_eighty_percent","r_hundred_percent")#name the columns
+mydataframe1#show the complete dataframe
+}
+newframe(df,abalone$weight.whole)
+```
+
+Q6: Create a single histogram of the 100% data and overlay and label lines that represent the 1%, 10%, 25%, 50%, and 80% SampleMean.
+```{r}
+par(mfrow=c(1,1))#reset the plot region to just one section
+hist(mydataframe$hundred_percent, xlab="weight.whole",main="Histogram of 100% sample")#plot the histogram of the 100% data
+for (i in 1:length(mydataframe)){#use for loop to generate the vertical lines
+  abline(v=mydataframe[3,i],col="red")#abline() plot the vertical lines for the value of Sample Mean of each percentile.Because SampleMean is the third row of the mydataframe and we use loop to choose each percentile corresponding SampleMean
+  text(x=mydataframe[3,i],i*(max(mydataframe$hundred_percent)/length(mydataframe)),names(mydataframe)[i],col="red")#text() is adding label to the plot. The first two inputs are the position of the lable, third input is the string we want to add to the plot
+}
+
+```
+
+Q7: Create a second histogram of the 100% data and overlay and label vertical lines that represent the 1%, 10%, 25%, 50%, and 80% ResampleMean.
+```{r}
+hist(mydataframe$hundred_percent, xlab="weight.whole",main="Histogram of 100% sample")#plot the histogram of the 100% data
+for (i in 1:length(mydataframe1)){#use for loop to generate the vertical lines
+  abline(v=mydataframe[3,i],col="red")#abline() plot the vertical lines for the value of Sample Mean of each percentile.Because SampleMean is the third row of the mydataframe and we use loop to choose each percentile corresponding ResampleMean
+  text(x=mydataframe[3,i],0+i,names(mydataframe1)[i],col="red")#text() is adding label to the plot. The first two inputs are the position of the lable, third input is the string we want to add to the plot
+}
+```
+
+Q8: Now execute your code on diamonds$carat and faithful$erruptions.
+For diamonds$carat 
+Q1:
+```{r}
+mydataframe<- data.frame(persample(diamonds$carat,.01),persample(diamonds$carat,.1),persample(diamonds$carat,.25),persample(diamonds$carat,.5),persample(diamonds$carat,.8),persample(diamonds$carat,1))
+```
+Q2:
+```{r}
+gplot(diamonds$carat,c(0.01,0.1,.25,.5,.8,1))
+```
+Q3:
+```{r}
+loop(diamonds)
+```
+Q4:
+```{r}
+gplot1(df)
+```
+Q5:
+```{r}
+mydataframe1=newframe(df,diamonds$carat)
+```
+Q6:
+```{r}
+par(mfrow=c(1,1))
+hist(diamonds$carat, xlab="weight.whole",main="Histogram of 100% sample")
+for (i in 1:length(mydataframe)){
+  abline(v=mydataframe[3,i],col="red")
+  text(x=mydataframe[3,i],0+i*1000,names(mydataframe)[i],col="red")
+}
+```
+Q7:
+```{r}
+par(mfrow=c(1,1))
+hist(diamonds$carat, xlab="weight.whole",main="Histogram of 100% sample")
+for (i in 1:length(mydataframe1)){
+  abline(v=mydataframe1[3,i],col="red")
+  text(x=mydataframe1[3,i],0+i*1000,names(mydataframe1)[i],col="red")
+}
+```
+For faithful$eruptions
+Q1:
+```{r}
+mydataframe<- data.frame(persample(faithful$eruptions,.01),persample(faithful$eruptions,.1),persample(faithful$eruptions,.25),persample(faithful$eruptions,.5),persample(faithful$eruptions,.8),persample(faithful$eruptions,1))
+```
+Q2:
+```{r}
+gplot(faithful$eruptions,c(0.01,0.1,.25,.5,.8,1))
+```
+Q3:
+```{r}
+loop(faithful)
+```
+Q4:
+```{r}
+gplot1(df)
+```
+Q5:
+```{r}
+mydataframe1=newframe(df,faithful$eruptions)
+```
+Q6:
+View(faithful$eruptions)
+```{r}
+par(mfrow=c(1,1))
+hist(faithful$eruptions, xlab="weight.whole",main="Histogram of 100% sample")
+for (i in 1:length(mydataframe)){
+  abline(v=mydataframe[3,i],col="red")
+  text(x=mydataframe[3,i],0+i*1000,names(mydataframe)[i],col="red")
+}
+```
+Q7:
+```{r}
+par(mfrow=c(1,1))
+hist(faithful$eruptions, xlab="weight.whole",main="Histogram of 100% sample")
+for (i in 1:length(mydataframe1)){
+  abline(v=mydataframe1[3,i],col="red")
+  text(x=mydataframe1[3,i],0+i*1000,names(mydataframe1)[i],col="red")
+}
+```
+
+Q9:As the sample size getting larger, the measures and histograms are more accurate. Because more data in the sample more information of the data set in encode into the sample therefore the sample can reflect the information of the pupulation better and more accurate.
